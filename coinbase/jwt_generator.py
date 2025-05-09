@@ -1,5 +1,6 @@
 import secrets
 import time
+from typing import Optional
 
 import jwt
 from cryptography.hazmat.primitives import serialization
@@ -7,12 +8,12 @@ from cryptography.hazmat.primitives import serialization
 from coinbase.constants import BASE_URL
 
 
-def build_jwt(key_var, secret_var, uri=None) -> str:
+def build_jwt(key_var: str, secret_var: str, uri: Optional[str] = None) -> str:
     """
     :meta private:
     """
     try:
-        private_key_bytes = secret_var.encode("utf-8")
+        private_key_bytes = key_var.encode("utf-8")
         private_key = serialization.load_pem_private_key(
             private_key_bytes, password=None
         )
@@ -24,7 +25,7 @@ def build_jwt(key_var, secret_var, uri=None) -> str:
         )
 
     jwt_data = {
-        "sub": key_var,
+        "sub": secret_var,
         "iss": "cdp",
         "nbf": int(time.time()),
         "exp": int(time.time()) + 120,
@@ -37,13 +38,13 @@ def build_jwt(key_var, secret_var, uri=None) -> str:
         jwt_data,
         private_key,
         algorithm="ES256",
-        headers={"kid": key_var, "nonce": secrets.token_hex()},
+        headers={"kid": secret_var, "nonce": secrets.token_hex()},
     )
 
     return jwt_token
 
 
-def build_rest_jwt(uri, key_var, secret_var) -> str:
+def build_rest_jwt(key_var: str, secret_var: str, uri: Optional[str] = None) -> str:
     """
     **Build REST JWT**
     __________
